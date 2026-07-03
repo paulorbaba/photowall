@@ -65,7 +65,10 @@ async function main() {
   drive.apply();
 
   await app.listen({ port: PORT, host: '0.0.0.0' });
-  log(`Photo Wall v2 no ar — telão: http://localhost:${PORT}/  painel: http://localhost:${PORT}/admin/`);
+  const publicUrl = process.env.RAILWAY_PUBLIC_DOMAIN
+    ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+    : `http://localhost:${PORT}`;
+  log(`Photo Wall v2 no ar em ${publicUrl}  (porta local ${PORT}) — painel em ${publicUrl}/admin/`);
 
   const shutdown = async () => {
     drive.stop();

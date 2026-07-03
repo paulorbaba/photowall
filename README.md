@@ -99,6 +99,49 @@ npm run build                       # na raiz
 cd apps/desktop && npm install && npm run dist
 ```
 
+## Deploy online (para testar com outras pessoas pelo link)
+
+Além de rodar localmente numa máquina de evento, dá para colocar o Photo Wall no ar num link
+público para outras pessoas testarem no navegador. A app já é *cloud-ready* (porta via
+`process.env.PORT`, bind em `0.0.0.0`, URLs de frontend relativas) — só falta um host que rode
+um **processo Node persistente** (não serverless), porque o backend mantém um WebSocket server e
+um watcher de pasta abertos o tempo todo.
+
+**Por que não Vercel:** o modelo serverless da Vercel não sustenta WebSocket de longa duração nem
+um watcher de arquivos contínuo, e as funções não compartilham disco entre invocações. Funcionaria
+só com uma reengenharia grande (storage externo, pub/sub externo). Para "testar rápido", plataformas
+com container persistente (Railway, Render, Fly.io) são o encaixe certo — usamos Railway aqui.
+
+### Deploy no Railway
+
+O repositório já tem um `Dockerfile` multi-stage pronto (builda `packages/shared` → `apps/server`
+→ `apps/wall` → `apps/admin` e roda só os artefatos finais). Para publicar:
+
+1. Crie um projeto no [railway.app](https://railway.app) e conecte este repositório GitHub
+   (branch atual: `claude/photo-wall-redesign-planning-k2r6wj`).
+2. O Railway detecta o `Dockerfile` automaticamente e builda a imagem — nenhuma configuração
+   extra é necessária. A porta é injetada via `process.env.PORT` (já suportado).
+3. Após o deploy, gere um domínio público em **Settings → Networking → Generate Domain**. Você
+   terá algo como `https://seu-projeto.up.railway.app` — telão em `/`, painel em `/admin/`.
+4. Compartilhe o link do telão e do painel com quem for testar.
+
+**Importante — este deploy padrão não tem autenticação nem disco persistente:**
+- **Sem senha no `/admin`**: qualquer pessoa com o link pode mudar a configuração, aprovar/rejeitar
+  ou apagar fotos. Adequado só para teste rápido entre pessoas de confiança — não exponha o link
+  publicamente sem adicionar proteção antes.
+- **Sem persistência**: o sistema de arquivos do container é efêmero; fotos e configurações somem
+  a cada reinício/redeploy. Para manter dados entre deploys, anexe um
+  [Railway Volume](https://docs.railway.app/reference/volumes) e aponte a variável de ambiente
+  `PHOTOWALL_DATA` para o caminho do volume — o código já lê essa variável
+  (`apps/server/src/paths.ts`), não precisa mudar nada.
+
+### Testar a imagem Docker localmente (opcional)
+
+```bash
+docker build -t photowall .
+docker run -p 4700:4700 photowall
+```
+
 ## Configuração
 
 Toda a configuração é feita pelo painel (nada de editar JSON na mão). O estado fica em
