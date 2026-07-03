@@ -115,12 +115,17 @@ com container persistente (Railway, Render, Fly.io) são o encaixe certo — usa
 ### Deploy no Railway
 
 O repositório já tem um `Dockerfile` multi-stage pronto (builda `packages/shared` → `apps/server`
-→ `apps/wall` → `apps/admin` e roda só os artefatos finais). Para publicar:
+→ `apps/wall` → `apps/admin` e roda só os artefatos finais) e um `railway.json` que força o
+Railway a usar esse Dockerfile. Para publicar:
 
 1. Crie um projeto no [railway.app](https://railway.app) e conecte este repositório GitHub
    (branch atual: `claude/photo-wall-redesign-planning-k2r6wj`).
-2. O Railway detecta o `Dockerfile` automaticamente e builda a imagem — nenhuma configuração
-   extra é necessária. A porta é injetada via `process.env.PORT` (já suportado).
+2. **Importante: este projeto é UM serviço só.** Se o Railway oferecer dividir o monorepo em
+   vários serviços (um por workspace, ex.: `@photowall/wall`, `@photowall/admin`), recuse/apague
+   esses serviços — `wall` e `admin` são builds estáticos servidos pelo próprio backend e crasham
+   se implantados sozinhos. Mantenha apenas um serviço com **Root Directory na raiz do repo**;
+   o `railway.json` garante o build via Dockerfile. A porta é injetada via `process.env.PORT`
+   (já suportado).
 3. Após o deploy, gere um domínio público em **Settings → Networking → Generate Domain**. Você
    terá algo como `https://seu-projeto.up.railway.app` — telão em `/`, painel em `/admin/`.
 4. Compartilhe o link do telão e do painel com quem for testar.
