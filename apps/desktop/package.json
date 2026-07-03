@@ -1,0 +1,25 @@
+{
+  "name": "@photowall/desktop",
+  "version": "2.0.0",
+  "description": "Photo Wall v2 — empacotamento desktop (Electron, modo kiosk)",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --linux"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.photowall.app",
+    "productName": "PhotoWall",
+    "files": ["main.cjs"],
+    "extraResources": [
+      { "from": "../server/dist", "to": "server" },
+      { "from": "../server/node_modules", "to": "server/node_modules" },
+      { "from": "../wall/dist", "to": "wall" },
+      { "from": "../admin/dist", "to": "admin" }
+    ]
+  }
+}

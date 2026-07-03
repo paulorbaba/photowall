@@ -1,0 +1,24 @@
+{
+  "name": "photowall",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Photo Wall v2 — parede de fotos em tempo real para eventos",
+  "workspaces": [
+    "packages/shared",
+    "apps/server",
+    "apps/wall",
+    "apps/admin"
+  ],
+  "scripts": {
+    "build": "npm run build -w packages/shared && npm run build -w apps/server && npm run build -w apps/wall && npm run build -w apps/admin",
+    "dev": "npm run build -w packages/shared && concurrently -n server,wall,admin -c blue,magenta,cyan \"npm run dev -w apps/server\" \"npm run dev -w apps/wall\" \"npm run dev -w apps/admin\"",
+    "start": "node apps/server/dist/index.js",
+    "samples": "node scripts/gen-samples.mjs",
+    "screenshot": "node scripts/screenshot.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "playwright-core": "^1.49.0"
+  }
+}
