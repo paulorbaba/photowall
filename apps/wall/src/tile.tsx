@@ -1,5 +1,12 @@
 import type { CSSProperties } from 'react';
-import type { EntryAnimation, FrameConfig, Photo } from '@photowall/shared';
+import type { EntryAnimation, FrameConfig, Photo, PhotoAlign } from '@photowall/shared';
+
+/** Converte o alinhamento configurado em object-position CSS. */
+export function alignPosition(align: PhotoAlign | undefined): string {
+  if (align === 'top') return 'center top';
+  if (align === 'bottom') return 'center bottom';
+  return 'center';
+}
 
 export function frameStyle(f: FrameConfig): CSSProperties {
   return {
@@ -61,7 +68,13 @@ export function Tile({
           animationDelay: `${delayMs}ms`
         }}
       >
-        <img src={`/media/photos/${photo.file}`} alt="" draggable={false} loading="lazy" />
+        <img
+          src={`/media/photos/${photo.file}`}
+          alt=""
+          draggable={false}
+          loading="lazy"
+          style={{ objectPosition: alignPosition(photo.align ?? frame.photoAlign) }}
+        />
       </div>
     </div>
   );

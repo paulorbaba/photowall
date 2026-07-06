@@ -70,8 +70,12 @@ body,
   z-index: 2;
 }
 
-.wall-area.with-title {
-  top: 12vh;
+.wall-logo {
+  display: block;
+  margin: 0 auto 1.2vh;
+  max-width: 50vw;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.5));
 }
 
 .wall-grid {

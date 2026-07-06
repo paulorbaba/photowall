@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { Photo, WallConfig } from '@photowall/shared';
-import { frameStyle } from './tile';
+import { alignPosition, frameStyle } from './tile';
 
 /**
  * Modo "scroll automático": a parede rola verticalmente sem parar, em loop,
@@ -39,7 +39,13 @@ export default function ScrollWall({ config, photos }: { config: WallConfig; pho
       {items.map((photo, i) => (
         <div className="cell scroll-cell" key={`${copy}-${i}`}>
           <div className="tile" style={frameStyle(frame)}>
-            <img src={`/media/photos/${photo.file}`} alt="" draggable={false} loading="lazy" />
+            <img
+              src={`/media/photos/${photo.file}`}
+              alt=""
+              draggable={false}
+              loading="lazy"
+              style={{ objectPosition: alignPosition(photo.align ?? frame.photoAlign) }}
+            />
           </div>
         </div>
       ))}

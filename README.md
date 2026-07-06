@@ -49,12 +49,47 @@ automática" para que entrem direto no telão.
 
 ## Fluxo das fotos
 
-1. Uma foto chega por uma das fontes: **pasta local** observada, **Google Drive** ou
-   **upload no painel**.
+1. Uma foto chega por uma das fontes: **página de upload dos convidados** (`/upload`),
+   **pasta local** observada, **Google Drive** ou **upload no painel**.
 2. O servidor copia a foto para o cache local (`data/photos/`) — a partir daí o telão não
    depende de rede nenhuma.
 3. Com a moderação ativa, a foto fica **pendente** até o operador aprovar no painel.
 4. Ao aprovar, a foto estreia no telão em tempo real (WebSocket), com a animação configurada.
+
+## Upload pelos convidados (recomendado)
+
+A forma mais simples de receber fotos dos smartphones durante o evento: a página pública
+**`/upload`** — mobile-first, com o branding (logo/título) do evento. O painel (aba **Fontes
+de fotos**) mostra o link e um **QR code** pronto para projetar no telão ou imprimir na mesa.
+O convidado escaneia, tira a foto ou escolhe da galeria e envia; a foto cai **sempre** na fila
+de moderação (mesmo com aprovação automática ligada para as outras fontes). Sem conta Google,
+sem instalar nada.
+
+> **Por que não usar um link de pasta compartilhada do Google Drive sem API?** O Google não
+> expõe listagem estável de pastas públicas fora da Drive API — o HTML da página é renderizado
+> por JavaScript, muda sem aviso e raspá-lo viola os termos de uso. O conector via API
+> (abaixo) continua disponível como alternativa, mas a página `/upload` cobre o mesmo caso de
+> uso com muito menos atrito.
+
+## Segurança do painel
+
+Defina a variável de ambiente **`ADMIN_PASSWORD`** para proteger o painel: o `/admin` passa a
+exigir senha (tela de login) e todas as rotas administrativas da API exigem o token da sessão
+(válido por 24h). Telão, mídia e página de upload continuam públicos. Sem a variável, o painel
+fica aberto — o próprio painel exibe um aviso na aba **Sistema**. No Railway: *Variables → New
+Variable → `ADMIN_PASSWORD`* e reinicie o serviço.
+
+## Enquadramento das fotos
+
+Fotos verticais/retratos podem ser cortadas pelo grid. Controle o recorte em dois níveis:
+
+- **Padrão global** (aba Aparência → Moldura): topo, centralizado ou rodapé. "Topo" costuma
+  funcionar melhor para fotos de pessoas.
+- **Por foto** (aba Moderação, cards das fotos aprovadas): botões ⬆ ◉ ⬇ ajustam o
+  enquadramento individual; clicar no ativo volta ao padrão global.
+
+*Detecção automática de rosto foi avaliada e fica como evolução futura — exigiria modelos de
+ML no servidor; o campo `align` por foto já deixa o caminho pronto para plugar isso depois.*
 
 ## Google Drive (upload pelos convidados)
 
@@ -130,11 +165,10 @@ Railway a usar esse Dockerfile. Para publicar:
    terá algo como `https://seu-projeto.up.railway.app` — telão em `/`, painel em `/admin/`.
 4. Compartilhe o link do telão e do painel com quem for testar.
 
-**Importante — este deploy padrão não tem autenticação nem disco persistente:**
-- **Sem senha no `/admin`**: qualquer pessoa com o link pode mudar a configuração, aprovar/rejeitar
-  ou apagar fotos. Adequado só para teste rápido entre pessoas de confiança — não exponha o link
-  publicamente sem adicionar proteção antes.
-- **Sem persistência**: o sistema de arquivos do container é efêmero; fotos e configurações somem
+**Importante para eventos reais:**
+- **Defina `ADMIN_PASSWORD`** (Variables) para proteger o painel — sem ela o `/admin` fica
+  aberto a qualquer pessoa com o link.
+- **Sem persistência por padrão**: o sistema de arquivos do container é efêmero; fotos e configurações somem
   a cada reinício/redeploy. Para manter dados entre deploys, anexe um
   [Railway Volume](https://docs.railway.app/reference/volumes) e aponte a variável de ambiente
   `PHOTOWALL_DATA` para o caminho do volume — o código já lê essa variável
@@ -156,6 +190,23 @@ Variáveis de ambiente úteis:
 
 - `PORT` — porta do servidor (padrão 4700)
 - `PHOTOWALL_DATA` — pasta de dados (padrão `./data`)
+
+## Uso como produto Sherpa42 (checklist de novo evento)
+
+O sistema foi desenhado para ser "reskinado" por evento sem tocar em código — é uma instância
+por evento (modelo de serviço, não SaaS):
+
+1. **Suba uma instância** (Railway ou outra plataforma com container persistente) e defina
+   `ADMIN_PASSWORD`. Para eventos reais, anexe um volume e aponte `PHOTOWALL_DATA` para ele.
+2. **Aplique o visual do cliente** no painel: logo da marca, título/subtítulo, cores, fundo
+   (imagem/vídeo da identidade do evento), moldura e animações.
+3. **Ou importe um preset**: aba **Sistema → Importar configuração** carrega um JSON exportado
+   de um evento anterior (o logo e o fundo são arquivos — reenvie-os se for uma instância nova).
+4. **Projete o QR** da página `/upload` (aba Fontes de fotos → Baixar QR) no telão ou imprima.
+5. **Reset entre eventos** na mesma instância: apague a pasta de dados (`data/` ou o volume) e
+   reinicie — o sistema volta ao estado inicial.
+
+A página de upload dos convidados exibe o crédito discreto "Photo Wall · by Sherpa42".
 
 ## Screenshots de verificação
 

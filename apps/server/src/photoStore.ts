@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Photo, PhotoStatus } from '@photowall/shared';
+import type { Photo, PhotoAlign, PhotoStatus } from '@photowall/shared';
 import { photosDir, registryFile } from './paths.js';
 
 export class PhotoStore {
@@ -34,6 +34,16 @@ export class PhotoStore {
     const p = this.photos.get(id);
     if (!p) return undefined;
     p.status = status;
+    p.updatedAt = Date.now();
+    this.scheduleSave();
+    return p;
+  }
+
+  setAlign(id: string, align: PhotoAlign | undefined): Photo | undefined {
+    const p = this.photos.get(id);
+    if (!p) return undefined;
+    if (align) p.align = align;
+    else delete p.align;
     p.updatedAt = Date.now();
     this.scheduleSave();
     return p;

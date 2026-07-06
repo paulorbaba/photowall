@@ -10,6 +10,7 @@ import { Ingestor } from './ingest.js';
 import { DriveSync } from './drive.js';
 import { createHub } from './hub.js';
 import { registerRoutes } from './routes.js';
+import { AdminAuth, registerAuth } from './auth.js';
 
 const PORT = Number(process.env.PORT ?? 4700);
 const VERSION = '2.0.0';
@@ -40,6 +41,12 @@ async function main() {
     app.get('/admin', (_req, reply) => reply.redirect('/admin/'));
   }
 
+  const auth = new AdminAuth();
+  registerAuth(app, auth);
+  if (!auth.enabled) {
+    app.log.warn('ADMIN_PASSWORD não definida — painel /admin SEM proteção por senha');
+  }
+
   const config = new ConfigStore();
   const store = new PhotoStore();
   store.load();
@@ -59,7 +66,16 @@ async function main() {
     drive.apply();
   };
 
-  registerRoutes(app, { config, store, ingestor, drive, hub, startedAt: Date.now(), version: VERSION });
+  registerRoutes(app, {
+    config,
+    store,
+    ingestor,
+    drive,
+    hub,
+    auth,
+    startedAt: Date.now(),
+    version: VERSION
+  });
 
   ingestor.syncWatcher();
   drive.apply();

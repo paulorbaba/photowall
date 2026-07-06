@@ -1,13 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { FastifyInstance } from 'fastify';
-import type { PhotoStatus, ServerStatus } from '@photowall/shared';
+import type { PhotoAlign, PhotoStatus, ServerStatus } from '@photowall/shared';
 import { backgroundsDir, dataDir } from './paths.js';
 import type { ConfigStore } from './configStore.js';
 import type { PhotoStore } from './photoStore.js';
 import type { Ingestor } from './ingest.js';
 import type { DriveSync } from './drive.js';
 import type { Hub } from './hub.js';
+import type { AdminAuth } from './auth.js';
+import { renderUploadPage } from './uploadPage.js';
 
 export interface RouteDeps {
   config: ConfigStore;
@@ -15,6 +17,7 @@ export interface RouteDeps {
   ingestor: Ingestor;
   drive: DriveSync;
   hub: Hub;
+  auth: AdminAuth;
   startedAt: number;
   version: string;
 }
@@ -51,6 +54,18 @@ export function registerRoutes(app: FastifyInstance, deps: RouteDeps): void {
     return photo;
   });
 
+  app.post('/api/photos/:id/align', async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const { align } = req.body as { align: PhotoAlign | null };
+    if (align !== null && !['top', 'center', 'bottom'].includes(align)) {
+      return reply.code(400).send({ error: 'alinhamento inválido' });
+    }
+    const photo = store.setAlign(id, align ?? undefined);
+    if (!photo) return reply.code(404).send({ error: 'foto não encontrada' });
+    hub.broadcast({ type: 'photos' });
+    return photo;
+  });
+
   app.post('/api/photos/approve-all', async () => {
     const count = store.approveAllPending();
     if (count > 0) hub.broadcast({ type: 'photos' });
@@ -78,6 +93,35 @@ export function registerRoutes(app: FastifyInstance, deps: RouteDeps): void {
     return { ingested: results.length, ids: results };
   });
 
+  // Upload público dos convidados (via página /upload): sempre passa pela
+  // fila de moderação, independentemente do autoApprove.
+  app.post('/api/guest-upload', async (req) => {
+    let ingested = 0;
+    for await (const part of req.parts()) {
+      if (part.type !== 'file') continue;
+      const buf = await part.toBuffer();
+      const photo = ingestor.ingestBuffer(buf, part.filename ?? 'convidado.jpg', 'guest');
+      if (photo) ingested++;
+    }
+    return { ingested };
+  });
+
+  // Página mobile de upload para convidados (QR code no painel aponta pra cá).
+  app.get('/upload', async (_req, reply) => {
+    reply.type('text/html; charset=utf-8').send(renderUploadPage(config.get()));
+  });
+
+  // Upload do logo da marca exibido junto ao título do telão.
+  app.post('/api/logo', async (req, reply) => {
+    const part = await req.file();
+    if (!part) return reply.code(400).send({ error: 'nenhum arquivo enviado' });
+    const buf = await part.toBuffer();
+    const ext = path.extname(part.filename ?? '').toLowerCase() || '.png';
+    const name = `logo-${Date.now()}${ext}`;
+    fs.writeFileSync(path.join(backgroundsDir, name), buf);
+    return config.update({ title: { logoFile: `/media/backgrounds/${name}` } });
+  });
+
   // Upload de imagem/vídeo de fundo; atualiza a config e avisa o telão.
   app.post('/api/background', async (req, reply) => {
     const part = await req.file();
@@ -103,6 +147,7 @@ export function registerRoutes(app: FastifyInstance, deps: RouteDeps): void {
     return {
       version: deps.version,
       uptimeSec: Math.round((Date.now() - deps.startedAt) / 1000),
+      authEnabled: deps.auth.enabled,
       counts: store.counts(),
       watcher: { folder: ingestor.activeFolder, active: ingestor.watcherActive },
       drive: {

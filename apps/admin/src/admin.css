@@ -558,3 +558,127 @@ input[type='color'] {
   gap: 8px;
   line-height: 1.5;
 }
+
+/* ---------- login ---------- */
+.login-root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 90% at 50% 0%, #191338 0%, var(--bg) 65%);
+}
+
+.login-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 10px;
+}
+
+.login-error {
+  color: var(--danger);
+  font-size: 12.5px;
+  margin-bottom: 12px;
+}
+
+/* ---------- alinhamento por foto ---------- */
+.align-row {
+  display: flex;
+  gap: 4px;
+  padding: 6px 9px 0;
+}
+
+.align-btn {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.align-btn.active {
+  border-color: var(--accent);
+  color: #b7a5ff;
+  background: rgba(124, 92, 255, 0.14);
+}
+
+/* ---------- card de upload dos convidados ---------- */
+.guest-card {
+  border-color: rgba(124, 92, 255, 0.45);
+}
+
+.guest-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: start;
+}
+
+.qr-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.qr-box img {
+  width: 150px;
+  height: 150px;
+  display: block;
+}
+
+.upload-link {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  color: #b7a5ff;
+  word-break: break-all;
+}
+
+@media (max-width: 700px) {
+  .guest-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- prévia do logo ---------- */
+.logo-preview {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.logo-preview img {
+  max-height: 60px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* ---------- aviso de segurança ---------- */
+.warn-card {
+  border-color: rgba(255, 173, 90, 0.5);
+  background: rgba(255, 173, 90, 0.07);
+}
+
+.warn-card code {
+  background: var(--bg);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+}

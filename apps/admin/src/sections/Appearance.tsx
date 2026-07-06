@@ -13,6 +13,7 @@ export default function Appearance({
   setConfig: (cfg: WallConfig) => void;
 }) {
   const bgInput = useRef<HTMLInputElement>(null);
+  const logoInput = useRef<HTMLInputElement>(null);
   const { background, frame, title } = config;
 
   return (
@@ -114,6 +115,20 @@ export default function Appearance({
               checked={frame.shadow}
               onChange={(v) => update('frame.shadow', v)}
             />
+            <SelectField
+              label="Enquadramento padrão das fotos"
+              value={frame.photoAlign}
+              options={[
+                { value: 'top', label: 'Topo (bom para retratos/rostos)' },
+                { value: 'center', label: 'Centralizado' },
+                { value: 'bottom', label: 'Rodapé' }
+              ]}
+              onChange={(v) => update('frame.photoAlign', v)}
+            />
+            <p className="muted" style={{ fontSize: 12 }}>
+              Dica: fotos de pessoas geralmente ficam melhores com enquadramento pelo topo. Você
+              também pode ajustar foto a foto na aba Moderação.
+            </p>
           </div>
 
           <div className="card">
@@ -132,6 +147,45 @@ export default function Appearance({
                   onChange={(v) => update('title.subtitle', v)}
                 />
                 <ColorField label="Cor do texto" value={title.color} onChange={(v) => update('title.color', v)} />
+
+                <div className="row-inline" style={{ marginBottom: 12 }}>
+                  <button className="btn btn-neutral" onClick={() => logoInput.current?.click()}>
+                    {title.logoFile ? 'Trocar logo da marca' : 'Enviar logo da marca'}
+                  </button>
+                  {title.logoFile && (
+                    <button className="btn btn-danger" onClick={() => update('title.logoFile', null)}>
+                      Remover logo
+                    </button>
+                  )}
+                </div>
+                <input
+                  ref={logoInput}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      api.uploadLogo(file).then(setConfig).catch(() => undefined);
+                      e.target.value = '';
+                    }
+                  }}
+                />
+                {title.logoFile && (
+                  <>
+                    <div className="logo-preview">
+                      <img src={title.logoFile} alt="logo" />
+                    </div>
+                    <RangeField
+                      label="Tamanho do logo"
+                      value={title.logoSize}
+                      min={4}
+                      max={20}
+                      unit="vh"
+                      onChange={(v) => update('title.logoSize', v)}
+                    />
+                  </>
+                )}
               </>
             )}
           </div>

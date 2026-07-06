@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { api, setUnauthorizedHandler } from './api';
 import { useConfig, usePhotos } from './useAdmin';
 import Moderation from './sections/Moderation';
 import Appearance from './sections/Appearance';
@@ -16,12 +17,73 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: 'system', label: 'Sistema', icon: '⚙️' }
 ];
 
+function Login() {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      const ok = await api.login(password);
+      if (ok) {
+        location.reload();
+      } else {
+        setError('Senha incorreta.');
+      }
+    } catch {
+      setError('Erro ao conectar ao servidor.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="login-root">
+      <form className="login-card" onSubmit={submit}>
+        <div className="brand" style={{ borderBottom: 'none', padding: 0, marginBottom: 18 }}>
+          <span className="brand-dot" />
+          <div>
+            <strong>Photo Wall</strong>
+            <span className="brand-sub">painel do evento</span>
+          </div>
+        </div>
+        <label className="field">
+          <span className="field-label">Senha do painel</span>
+          <input
+            type="password"
+            value={password}
+            autoFocus
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </label>
+        {error && <p className="login-error">{error}</p>}
+        <button className="btn btn-neutral login-btn" type="submit" disabled={busy}>
+          {busy ? 'Entrando…' : 'Entrar'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export default function App() {
+  const [needLogin, setNeedLogin] = useState(false);
+  setUnauthorizedHandler(
+    useCallback(() => {
+      api.logout();
+      setNeedLogin(true);
+    }, [])
+  );
+
   const { config, update, saving, acceptRemote, setConfig } = useConfig();
   const { photos, refresh } = usePhotos(acceptRemote);
   const [tab, setTab] = useState<Tab>('moderation');
 
   const pendingCount = photos.filter((p) => p.status === 'pending').length;
+
+  if (needLogin) return <Login />;
 
   if (!config) {
     return (
@@ -68,7 +130,7 @@ export default function App() {
         {tab === 'appearance' && <Appearance config={config} update={update} setConfig={setConfig} />}
         {tab === 'grid' && <GridAnimation config={config} update={update} />}
         {tab === 'sources' && <Sources config={config} update={update} />}
-        {tab === 'system' && <System />}
+        {tab === 'system' && <System config={config} />}
       </main>
     </div>
   );

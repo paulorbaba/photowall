@@ -4,7 +4,8 @@ export type BackgroundType = 'color' | 'image' | 'video';
 export type AnimationMode = 'mosaic' | 'paged' | 'scroll';
 export type EntryAnimation = 'fade' | 'zoom' | 'flip' | 'slide' | 'pop' | 'random';
 export type PhotoStatus = 'pending' | 'approved' | 'rejected';
-export type PhotoSource = 'local' | 'drive' | 'upload';
+export type PhotoSource = 'local' | 'drive' | 'upload' | 'guest';
+export type PhotoAlign = 'top' | 'center' | 'bottom';
 
 export interface GridConfig {
   rows: number;
@@ -34,6 +35,8 @@ export interface FrameConfig {
   matteColor: string;
   shadow: boolean;
   shadowColor: string;
+  /** Alinhamento padrão do recorte das fotos dentro da célula */
+  photoAlign: PhotoAlign;
 }
 
 export interface TitleConfig {
@@ -41,6 +44,10 @@ export interface TitleConfig {
   text: string;
   subtitle: string;
   color: string;
+  /** URL relativa do logo da marca em /media/backgrounds (null = sem logo) */
+  logoFile: string | null;
+  /** Altura do logo, em vh */
+  logoSize: number;
 }
 
 export interface AnimationConfig {
@@ -103,6 +110,8 @@ export interface Photo {
   driveId?: string;
   size: number;
   status: PhotoStatus;
+  /** Override de enquadramento desta foto (senão vale frame.photoAlign) */
+  align?: PhotoAlign;
   createdAt: number;
   updatedAt: number;
 }
@@ -110,6 +119,8 @@ export interface Photo {
 export interface ServerStatus {
   version: string;
   uptimeSec: number;
+  /** true quando ADMIN_PASSWORD está configurada no servidor */
+  authEnabled: boolean;
   counts: { pending: number; approved: number; rejected: number };
   watcher: { folder: string; active: boolean };
   drive: { enabled: boolean; lastSyncAt: number | null; lastError: string | null };
@@ -137,13 +148,16 @@ export const DEFAULT_CONFIG: WallConfig = {
     matte: 0,
     matteColor: '#ffffff',
     shadow: true,
-    shadowColor: 'rgba(120,80,255,0.45)'
+    shadowColor: 'rgba(120,80,255,0.45)',
+    photoAlign: 'center'
   },
   title: {
     enabled: false,
     text: 'PHOTO WALL',
     subtitle: 'Momentos criados ao vivo pelos nossos visitantes',
-    color: '#ffffff'
+    color: '#ffffff',
+    logoFile: null,
+    logoSize: 8
   },
   animation: {
     mode: 'mosaic',

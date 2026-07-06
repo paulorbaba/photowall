@@ -1,7 +1,71 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import QRCode from 'qrcode';
 import type { WallConfig } from '@photowall/shared';
 import { api } from '../api';
 import { NumberField, TextField, Toggle } from '../controls';
+
+/** Em dev o server roda em :4700; em produção a página /upload é a mesma origem. */
+const UPLOAD_URL = import.meta.env.DEV
+  ? 'http://localhost:4700/upload'
+  : `${location.origin}/upload`;
+
+function GuestUploadCard() {
+  const [qr, setQr] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    QRCode.toDataURL(UPLOAD_URL, {
+      width: 480,
+      margin: 1,
+      color: { dark: '#0f1117', light: '#ffffff' }
+    })
+      .then(setQr)
+      .catch(() => undefined);
+  }, []);
+
+  const copy = () => {
+    navigator.clipboard?.writeText(UPLOAD_URL).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className="card guest-card">
+      <h3>📱 Upload pelos convidados (recomendado)</h3>
+      <div className="guest-grid">
+        <div>
+          <p className="muted" style={{ marginBottom: 12, lineHeight: 1.55 }}>
+            Compartilhe o link ou projete o QR code no evento: o convidado escaneia com a câmera
+            do celular, tira a foto ou escolhe da galeria e envia. A foto cai direto na fila de
+            moderação — sem conta Google, sem instalar nada.
+          </p>
+          <div className="row-inline" style={{ marginBottom: 10 }}>
+            <code className="upload-link">{UPLOAD_URL}</code>
+          </div>
+          <div className="row-inline">
+            <button className="btn btn-neutral" onClick={copy}>
+              {copied ? '✓ Copiado' : 'Copiar link'}
+            </button>
+            <a className="btn btn-neutral" href={UPLOAD_URL} target="_blank" rel="noreferrer">
+              ↗ Abrir página
+            </a>
+            {qr && (
+              <a className="btn btn-neutral" href={qr} download="qr-photo-wall.png">
+                ⬇ Baixar QR
+              </a>
+            )}
+          </div>
+        </div>
+        {qr && (
+          <div className="qr-box">
+            <img src={qr} alt="QR code da página de upload" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Sources({
   config,
@@ -27,6 +91,8 @@ export default function Sources({
         <h2>Fontes de fotos</h2>
       </div>
 
+      <GuestUploadCard />
+
       <div className="card">
         <h3>Pasta local</h3>
         <TextField
@@ -38,10 +104,15 @@ export default function Sources({
       </div>
 
       <div className="card">
-        <h3>Google Drive</h3>
+        <h3>Google Drive (alternativa avançada)</h3>
+        <p className="muted" style={{ marginBottom: 12, fontSize: 12.5, lineHeight: 1.5 }}>
+          Requer configuração no Google Cloud (chave de API ou service account) — o Google não
+          oferece acesso confiável a pastas compartilhadas sem API. Para a maioria dos eventos, o
+          upload pelos convidados acima é mais simples.
+        </p>
         <Toggle
           label="Sincronizar com uma pasta do Google Drive"
-          hint="convidados enviam fotos pelo celular direto na pasta compartilhada"
+          hint="fotos da pasta compartilhada entram na fila automaticamente"
           checked={sources.drive.enabled}
           onChange={(v) => update('sources.drive.enabled', v)}
         />

@@ -1,14 +1,52 @@
-import { useRef } from 'react';
-import type { Photo, WallConfig } from '@photowall/shared';
+import { useRef, type ReactNode } from 'react';
+import type { Photo, PhotoAlign, WallConfig } from '@photowall/shared';
 import { api } from '../api';
 import { Toggle } from '../controls';
 
+const SOURCE_LABEL: Record<Photo['source'], string> = {
+  drive: 'Drive',
+  upload: 'Painel',
+  guest: 'Convidado',
+  local: 'Pasta'
+};
+
+const ALIGN_OPTIONS: { value: PhotoAlign; icon: string; label: string }[] = [
+  { value: 'top', icon: '⬆', label: 'Enquadrar pelo topo' },
+  { value: 'center', icon: '◉', label: 'Centralizar' },
+  { value: 'bottom', icon: '⬇', label: 'Enquadrar pelo rodapé' }
+];
+
+function AlignButtons({ photo, onDone }: { photo: Photo; onDone: () => void }) {
+  return (
+    <div className="align-row" title="Enquadramento da foto no telão">
+      {ALIGN_OPTIONS.map((o) => {
+        const active = photo.align === o.value;
+        return (
+          <button
+            key={o.value}
+            className={`align-btn ${active ? 'active' : ''}`}
+            title={o.label}
+            onClick={() =>
+              // clicar no ativo volta ao padrão global
+              api.setAlign(photo.id, active ? null : o.value).then(onDone).catch(() => undefined)
+            }
+          >
+            {o.icon}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function PhotoCard({
   photo,
-  actions
+  actions,
+  footer
 }: {
   photo: Photo;
   actions: { label: string; kind: 'ok' | 'danger' | 'neutral'; onClick: () => void }[];
+  footer?: ReactNode;
 }) {
   return (
     <div className="photo-card">
@@ -17,8 +55,9 @@ function PhotoCard({
         <span className="photo-name" title={photo.originalName}>
           {photo.originalName}
         </span>
-        <span className="photo-source">{photo.source === 'drive' ? 'Drive' : photo.source === 'upload' ? 'Painel' : 'Pasta'}</span>
+        <span className="photo-source">{SOURCE_LABEL[photo.source]}</span>
       </div>
+      {footer}
       <div className="photo-actions">
         {actions.map((a) => (
           <button key={a.label} className={`btn btn-${a.kind}`} onClick={a.onClick}>
@@ -121,6 +160,7 @@ export default function Moderation({
               <PhotoCard
                 key={p.id}
                 photo={p}
+                footer={<AlignButtons photo={p} onDone={refresh} />}
                 actions={[
                   { label: 'Tirar do telão', kind: 'danger', onClick: () => act(api.setStatus(p.id, 'rejected')) }
                 ]}
