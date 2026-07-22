@@ -38,6 +38,14 @@ function sanitize(cfg: WallConfig): WallConfig {
   cfg.frame.borderWidth = clamp(cfg.frame.borderWidth, 0, 60, d.frame.borderWidth);
   cfg.frame.borderRadius = clamp(cfg.frame.borderRadius, 0, 200, d.frame.borderRadius);
   cfg.frame.matte = clamp(cfg.frame.matte, 0, 80, d.frame.matte);
+  cfg.title.offsetX = clamp(cfg.title.offsetX, -40, 40, d.title.offsetX);
+  cfg.title.offsetY = clamp(cfg.title.offsetY, 0, 80, d.title.offsetY);
+  cfg.title.titleSize = clamp(cfg.title.titleSize, 1, 20, d.title.titleSize);
+  cfg.title.subtitleSize = clamp(cfg.title.subtitleSize, 0.5, 12, d.title.subtitleSize);
+  cfg.title.gridGap = clamp(cfg.title.gridGap, 0, 60, d.title.gridGap);
+  cfg.title.logoSize = clamp(cfg.title.logoSize, 1, 40, d.title.logoSize);
+  const alignH = ['left', 'center', 'right'];
+  if (!alignH.includes(cfg.title.alignH)) cfg.title.alignH = d.title.alignH;
   cfg.animation.entryDuration = clamp(cfg.animation.entryDuration, 100, 5000, d.animation.entryDuration);
   cfg.animation.swapInterval = clamp(cfg.animation.swapInterval, 300, 60000, d.animation.swapInterval);
   cfg.animation.pageDuration = clamp(cfg.animation.pageDuration, 1000, 600000, d.animation.pageDuration);

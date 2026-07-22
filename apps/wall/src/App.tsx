@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { BackgroundConfig, TitleConfig } from '@photowall/shared';
 import { useWallData } from './useWallData';
 import MosaicWall from './MosaicWall';
@@ -25,8 +26,32 @@ function Background({ bg }: { bg: BackgroundConfig }) {
 
 function Title({ title }: { title: TitleConfig }) {
   if (!title.enabled) return null;
+
+  // Âncora horizontal: left/right prendem numa borda; center fica livre no
+  // meio e o offset desloca lateralmente via transform (não afeta a largura).
+  const blockStyle: CSSProperties = {
+    color: title.color,
+    top: `${title.offsetY}vh`,
+    textAlign: title.alignH,
+    alignItems: title.alignH === 'left' ? 'flex-start' : title.alignH === 'right' ? 'flex-end' : 'center',
+    '--title-size': `${title.titleSize}vh`,
+    '--subtitle-size': `${title.subtitleSize}vh`
+  } as CSSProperties;
+
+  if (title.alignH === 'left') {
+    blockStyle.left = `${title.offsetX}vw`;
+    blockStyle.right = 'auto';
+  } else if (title.alignH === 'right') {
+    blockStyle.right = `${title.offsetX}vw`;
+    blockStyle.left = 'auto';
+  } else {
+    blockStyle.left = 0;
+    blockStyle.right = 0;
+    blockStyle.transform = `translateX(${title.offsetX}vw)`;
+  }
+
   return (
-    <div className="wall-title" style={{ color: title.color }}>
+    <div className="wall-title" style={blockStyle}>
       {title.logoFile && (
         <img
           className="wall-logo"
@@ -57,11 +82,7 @@ export default function App() {
       <Title title={config.title} />
       <div
         className="wall-area"
-        style={{
-          top: config.title.enabled
-            ? `${12 + (config.title.logoFile ? config.title.logoSize + 1 : 0)}vh`
-            : 0
-        }}
+        style={{ top: config.title.enabled ? `${config.title.gridGap}vh` : 0 }}
       >
         {photos.length === 0 ? (
           <div className="empty-state">

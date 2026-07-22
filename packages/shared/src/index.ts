@@ -6,6 +6,7 @@ export type EntryAnimation = 'fade' | 'zoom' | 'flip' | 'slide' | 'pop' | 'rando
 export type PhotoStatus = 'pending' | 'approved' | 'rejected';
 export type PhotoSource = 'local' | 'drive' | 'upload' | 'guest';
 export type PhotoAlign = 'top' | 'center' | 'bottom';
+export type BlockAlignH = 'left' | 'center' | 'right';
 
 export interface GridConfig {
   rows: number;
@@ -48,6 +49,18 @@ export interface TitleConfig {
   logoFile: string | null;
   /** Altura do logo, em vh */
   logoSize: number;
+  /** Âncora horizontal do bloco (logo + título + subtítulo) */
+  alignH: BlockAlignH;
+  /** Deslocamento horizontal a partir da âncora, em vw (negativo = mais à esquerda) */
+  offsetX: number;
+  /** Distância do topo do telão até o bloco, em vh */
+  offsetY: number;
+  /** Tamanho da fonte do título, em vh */
+  titleSize: number;
+  /** Tamanho da fonte do subtítulo, em vh */
+  subtitleSize: number;
+  /** Distância reservada do topo até o início do grid de fotos, em vh */
+  gridGap: number;
 }
 
 export interface AnimationConfig {
@@ -157,7 +170,13 @@ export const DEFAULT_CONFIG: WallConfig = {
     subtitle: 'Momentos criados ao vivo pelos nossos visitantes',
     color: '#ffffff',
     logoFile: null,
-    logoSize: 8
+    logoSize: 8,
+    alignH: 'center',
+    offsetX: 0,
+    offsetY: 3,
+    titleSize: 5.2,
+    subtitleSize: 2,
+    gridGap: 12
   },
   animation: {
     mode: 'mosaic',

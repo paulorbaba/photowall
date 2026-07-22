@@ -189,6 +189,93 @@ export default function Appearance({
               </>
             )}
           </div>
+
+          {title.enabled && (
+            <div className="card">
+              <h3>Posição e escala do bloco</h3>
+              {(() => {
+                // Estimativa da altura do bloco (logo + título + subtítulo),
+                // nos mesmos termos usados pelo CSS do telão, para alertar
+                // quando "distância até o grid" for menor que o bloco real.
+                const blockHeight =
+                  title.offsetY +
+                  (title.logoFile ? title.logoSize + 1.2 : 0) +
+                  title.titleSize +
+                  (title.subtitle ? title.subtitleSize + 0.6 : 0);
+                const overlap = blockHeight > title.gridGap;
+                if (!overlap) return null;
+                return (
+                  <div className="overlap-warning">
+                    ⚠️ O bloco (~{blockHeight.toFixed(1)}vh) é mais alto que a distância até o
+                    grid ({title.gridGap}vh) — o título pode sobrepor as fotos.
+                    <button
+                      className="btn btn-neutral"
+                      style={{ marginTop: 8 }}
+                      onClick={() => update('title.gridGap', Math.round(blockHeight + 2))}
+                    >
+                      Ajustar automaticamente
+                    </button>
+                  </div>
+                );
+              })()}
+              <SelectField
+                label="Alinhamento horizontal"
+                value={title.alignH}
+                options={[
+                  { value: 'left', label: 'Esquerda' },
+                  { value: 'center', label: 'Centro' },
+                  { value: 'right', label: 'Direita' }
+                ]}
+                onChange={(v) => update('title.alignH', v)}
+              />
+              <RangeField
+                label="Deslocamento horizontal"
+                value={title.offsetX}
+                min={-40}
+                max={40}
+                unit="vw"
+                onChange={(v) => update('title.offsetX', v)}
+              />
+              <RangeField
+                label="Distância do topo"
+                value={title.offsetY}
+                min={0}
+                max={60}
+                unit="vh"
+                onChange={(v) => update('title.offsetY', v)}
+              />
+              <RangeField
+                label="Tamanho do título"
+                value={title.titleSize}
+                min={2}
+                max={14}
+                step={0.2}
+                unit="vh"
+                onChange={(v) => update('title.titleSize', v)}
+              />
+              <RangeField
+                label="Tamanho do subtítulo"
+                value={title.subtitleSize}
+                min={1}
+                max={8}
+                step={0.2}
+                unit="vh"
+                onChange={(v) => update('title.subtitleSize', v)}
+              />
+              <RangeField
+                label="Distância até o grid de fotos"
+                value={title.gridGap}
+                min={0}
+                max={40}
+                unit="vh"
+                onChange={(v) => update('title.gridGap', v)}
+              />
+              <p className="muted" style={{ fontSize: 12 }}>
+                Dica: use esquerda/direita com o deslocamento horizontal para encostar o bloco
+                numa borda; "distância até o grid" evita que o título encoste nas fotos.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="col">

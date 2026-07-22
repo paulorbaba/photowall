@@ -91,6 +91,21 @@ Fotos verticais/retratos podem ser cortadas pelo grid. Controle o recorte em doi
 *Detecção automática de rosto foi avaliada e fica como evolução futura — exigiria modelos de
 ML no servidor; o campo `align` por foto já deixa o caminho pronto para plugar isso depois.*
 
+## Posição e escala do título/logo
+
+Na aba Aparência → card "Posição e escala do bloco" (aparece quando o título está ativo):
+
+- **Alinhamento horizontal**: esquerda, centro ou direita.
+- **Deslocamento horizontal** (vw): afasta o bloco da borda ancorada (ou do centro).
+- **Distância do topo** (vh): sobe/desce o bloco.
+- **Tamanho do título/subtítulo** (vh): escala independente dos dois textos.
+- **Distância até o grid de fotos** (vh): folga reservada entre o bloco e a primeira linha de fotos.
+
+Como a distância até o grid é definida à parte da altura real do bloco (que muda com logo,
+tamanho de fonte e distância do topo), o painel calcula a altura estimada do bloco e mostra um
+aviso com botão **"Ajustar automaticamente"** sempre que o valor atual for insuficiente e
+puder causar sobreposição com as fotos.
+
 ## Google Drive (upload pelos convidados)
 
 Compartilhe uma pasta do Drive com os convidados (eles enviam fotos pelo app do Drive no

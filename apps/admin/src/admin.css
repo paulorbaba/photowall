@@ -670,6 +670,18 @@ input[type='color'] {
   object-fit: contain;
 }
 
+/* ---------- aviso de sobreposição do bloco de título ---------- */
+.overlap-warning {
+  background: rgba(255, 173, 90, 0.1);
+  border: 1px solid rgba(255, 173, 90, 0.4);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: #ffc98a;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
 /* ---------- aviso de segurança ---------- */
 .warn-card {
   border-color: rgba(255, 173, 90, 0.5);
